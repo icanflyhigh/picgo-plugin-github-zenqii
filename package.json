@@ -1,12 +1,12 @@
 {
   "name": "picgo-plugin-gihub_zenqii",
-  "version": "v0.1",
+  "version": "v0.2",
   "description": "customized picgo uploader for github",
   "main": "src/index.js",
   "publishConfig": {
     "access": "public"
   },
-  "homepage": "https://github.com/icanflyhigh/picgo-plugin-github-plus-plus",
+  "homepage": "https://github.com/icanflyhigh/picgo-plugin-github-zenqii",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "patch": "npm version patch && git push origin master && git push origin --tags",
