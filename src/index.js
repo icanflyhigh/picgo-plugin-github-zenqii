@@ -1,10 +1,9 @@
 const uploadedName = "github_zenqii";
 const domain = "https://raw.githubusercontent.com";
 const GithubUrl = 'https://api.github.com/repos'
-const urlParser = require("url");
 const defaultMsg = "picgo commit";
-const userName =  
-
+// import { getIns } from '../lib/octokit'
+// import { Octokit, App } from "https://cdn.skypack.dev/octokit?dts";
 module.exports = (ctx) => {
   const register = () => {
     ctx.helper.uploader.register(uploadedName, {
@@ -27,7 +26,7 @@ module.exports = (ctx) => {
     // ctx.log.info("Config ok");
     // https://api.github.com/repos/icanflyhigh/PicRepo
     userConfig["baseUrl"] =
-      GithubUrl + "/" + userConfig.owner + "/" + userConfig.repo + "/contents";
+      GithubUrl + "/" + userConfig.owner + "/" + userConfig.repo + "/contents/";
     userConfig["previewUrl"] =
       domain +
       "/" +
@@ -47,8 +46,8 @@ module.exports = (ctx) => {
     const token = userConfig.token;
     return {
       // "Content-Type": "application/json;charset=UTF-8",
-      Authorization: `token ${token}`,
-      'User-Agent': 'PicGo'
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${token}`
     };
   };
 
@@ -70,9 +69,10 @@ module.exports = (ctx) => {
 
       let perRealUrl = realUrl + "/" + imgList[i].fileName;
       const postConfig = postOptions(perRealUrl, image);
+      ctx.log.info("[upload url]: "+ perRealUrl)
 
       try {
-        await ctx.Request.request(postConfig);
+        await ctx.request(postConfig);
         imgList[i]["imgUrl"] =
           userConfig.previewUrl + "/" + imgList[i].fileName;
       } catch (err) {
@@ -121,6 +121,9 @@ module.exports = (ctx) => {
     return opts;
   };
 
+
+
+
   // trigger delete file
   const onRemove = async function (files) {
     // log request params
@@ -128,50 +131,66 @@ module.exports = (ctx) => {
     if (rms.length === 0) {
       return;
     }
-
     ctx.log.info("删除个数:" + rms.length);
-    ctx.log.info("uploaded 信息:");
     let headers = getHeaders();
     let config = getUserConfig();
+    let userConfig = config;
+    userConfig["realUrl"] =
+    domain +
+    "/" +
+    userConfig.owner +
+    "/" +
+    userConfig.repo +
+    "/main/";
     const fail = [];
 
     for (let i = 0; i < rms.length; i++) {
       const each = rms[i];
       let filepath = getFilePath(each.imgUrl);
-      let sha = await getSha(filepath).catch((err) => {
-        ctx.log.info("[删除操作]获取sha值：" + JSON.stringify(err));
-      });
 
-      let url = `${filepath}`;
-      ctx.log.info("[删除操作]当前删除地址：" + url);
+      let url_api = filepath.replace(userConfig.realUrl, userConfig.baseUrl);
+      ctx.log.info("[删除操作]图片rul:" + url_api)
+      
+      const opts1= {
+        method: "GET",
+        url: `${url_api}`,
+        headers: headers,
+        // json: true
+      };
+      // ctx.log.info(opts1);
+      let sha = await getSha(url_api).catch((err) => {
+          ctx.log.info("[删除操作] request失败" + JSON.stringify(err));
+        });
+      // ctx.log.info(res)
+      let url = `${url_api}`;
+      ctx.log.info("[删除操作]当前删除地址: " + url);
       formData = {
-        branch: 'main',
         message: config.message || defaultMsg,
         sha: `${sha}`,
-      }
+      };
       let opts = {
         method: "DELETE",
-        url: encodeURI(url),
+        url: encodeURI(url_api),
         headers: headers,
-        body: formData,
+        data: formData,
       };
-      ctx.log.info("[删除操作]当前参数" + JSON.stringify(opts));
+      // ctx.log.info("[删除操作]当前参数" + JSON.stringify(opts));
       // log request params
       response = await ctx.request(opts);
-      ctx.log.info(response);
+      // ctx.log.info(response);
     }
-
     ctx.emit("notification", {
       title: "删除提示",
       body: fail.length === 0 ? "成功同步删除" : `删除失败${fail.length}个`,
     });
+    ctx.log.info("[删除操作]: FINISH")
   };
 
   const getFilePath = function (url) {
   // https://raw.githubusercontent.com/icanflyhigh/PicRepo/main/PicGO/test.jpg
   // https://api.github.com/icanflyhigh/PicRepo/content/PicGO/test.jpg
     let userConfig = getUserConfig()
-    let urlStr = url.replace(userConfig.realUrl + '/main', userConfig.baseUrl);
+    let urlStr = url.replace(userConfig.realUrl + '/main/', userConfig.baseUrl);
     return urlStr
   };
 
@@ -182,21 +201,20 @@ module.exports = (ctx) => {
 
     const opts = {
       method: "GET",
-      url: encodeURI(url),
+      url: `${url}`,
       headers: headers,
+      // json: true
     };
-
-    let res = await ctx.Request.request(opts);
-    let tmp = JSON.parse(res);
-
-    return tmp.sha;
+    
+    let res = await ctx.request(opts);
+    return res.sha;
   };
 
   const formatConfigPath = function (userConfig) {
     var nowDate = new Date();
     const MM = nowDate.getMonth() + 1;
     const YY = nowDate.getFullYear();
-    return (userConfig.path ?  "/" + userConfig.path  : "") + "/" + YY +  "/"+ MM;
+    return (userConfig.path ?   userConfig.path  : "") + "/" + YY +  "/"+ MM;
   };
 
   const config = (ctx) => {
