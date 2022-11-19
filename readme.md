@@ -1,4 +1,4 @@
-# picgo-plugin-github_zenqii
+# picgo-plugin-github_zenqii V0.2
 
 customized PicGo Uploader DemoFor Github.
 
@@ -28,11 +28,9 @@ customized PicGo Uploader DemoFor Github.
 
 ## Usage
 
-仅支持上传
+支持上传和删除！
 
-## TODO
 
-* [ ] 支持delete（写了但是有bug）
 
 ## Acknowledge
 
@@ -48,10 +46,11 @@ customized PicGo Uploader DemoFor Github.
 
 * 阅读 [github api](https://docs.github.com/cn/rest/repos/contents#)；
 * 阅读[官方文档](https://picgo.github.io/PicGo-Core-Doc/zh/guide/use-in-node.html#%E5%88%9D%E5%A7%8B%E5%8C%96)；
+* picgo的[文档](https://picgo.github.io/PicGo-Core-Doc/zh/api/);
 * 学一点点  JavaScript；
 * 在有一定的了解之后，找插件的 repo（包括官方的template，插件，别人插件的repo），依葫芦画瓢快速搞一个。
 
 * 祝你好运
 
-最后感谢这个 [repo](https://github.com/zhanghuid/picgo-plugin-gitee) ，给我提供了模板。
+~~最后感谢这个 [repo](https://github.com/zhanghuid/picgo-plugin-gitee) ，给我提供了模板~~。(v0.2，我自己重新写了一遍)
 
